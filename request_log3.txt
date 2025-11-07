@@ -1,0 +1,4 @@
+У файлі math_operations.h створи прототип функції int add(int a, int b);
+Потрібно написати unit тести до math_operations у unit_tests.cpp
+Треба додати підтримку google test у cmakelists.txt
+Додай інструкції для створення тестового виконуваного файлу та запуску тестів
