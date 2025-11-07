@@ -1,0 +1,1 @@
+/usr/bin/c++ CMakeFiles/hello.dir/main.cpp.o -o hello  libcsad2526ki406dariiprotsak20_lib.a 
