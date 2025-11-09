@@ -31,36 +31,34 @@ if(NOT PROJECT_SOURCES)
     )
 endif()
 
-if(PROJECT_SOURCES)
-    add_executable(${PROJECT_NAME} ${PROJECT_SOURCES})
-    target_include_directories(${PROJECT_NAME} PRIVATE
-        "${CMAKE_SOURCE_DIR}/include"
-    )
-    target_compile_options(${PROJECT_NAME} PRIVATE
-        -Wall -Wextra -Wpedantic
-    )
-else()
-    message(WARNING "No source files found in src/ or project root. Add sources or update CMakeLists.txt.")
-endif()
+# Create a static library from the sources
+add_library(${PROJECT_NAME}_lib STATIC ${PROJECT_SOURCES})
+target_include_directories(${PROJECT_NAME}_lib PUBLIC
+    "${CMAKE_SOURCE_DIR}/include"
+)
+target_compile_options(${PROJECT_NAME}_lib PRIVATE
+    -Wall -Wextra -Wpedantic
+)
 
-# Link threads if needed
+# Link threads to the library
 find_package(Threads REQUIRED)
-if(TARGET ${PROJECT_NAME})
-    target_link_libraries(${PROJECT_NAME} PRIVATE Threads::Threads)
-endif()
+target_link_libraries(${PROJECT_NAME}_lib PRIVATE Threads::Threads)
 
-# Testing (look for tests/ directory)
-include(CTest)
+# Main executable linking the library
+add_executable(hello main.cpp)
+target_link_libraries(hello PRIVATE ${PROJECT_NAME}_lib)
 
-# Fetch GoogleTest using FetchContent (only when building tests)
+# Enable testing early
+enable_testing()
+
+# Testing setup
 include(FetchContent)
 if(BUILD_TESTING)
     FetchContent_Declare(
       googletest
       GIT_REPOSITORY https://github.com/google/googletest.git
-      GIT_TAG release-1.14.0
+      GIT_TAG main
     )
-    # Optional: avoid building googletest's own tests
     set(BUILD_GTEST ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
 
@@ -68,7 +66,6 @@ if(BUILD_TESTING)
 endif()
 
 if(BUILD_TESTING)
-    enable_testing()
     file(GLOB_RECURSE TEST_SOURCES CONFIGURE_DEPENDS
         "${CMAKE_SOURCE_DIR}/tests/*.cpp"
         "${CMAKE_SOURCE_DIR}/tests/*.c"
@@ -77,22 +74,27 @@ if(BUILD_TESTING)
         add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
         target_include_directories(${PROJECT_NAME}_tests PRIVATE
             "${CMAKE_SOURCE_DIR}/include"
-            "${CMAKE_SOURCE_DIR}"            # allow including headers from project root
+            "${CMAKE_SOURCE_DIR}"             # allow including headers from project root
         )
         target_compile_options(${PROJECT_NAME}_tests PRIVATE
             -Wall -Wextra -Wpedantic
         )
-        target_link_libraries(${PROJECT_NAME}_tests PRIVATE GTest::gtest_main Threads::Threads)
-        # Register tests with CTest
-        gtest_discover_tests(${PROJECT_NAME}_tests)
+        target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME}_lib GTest::gtest_main Threads::Threads)
 
-        # convenient targets to build and run tests
+        # Replace automatic discovery with manual add_test registration
+        add_test(NAME AdditionBasic_PositiveNumbers COMMAND ${PROJECT_NAME}_tests --gtest_filter=AdditionBasic.PositiveNumbers)
+        add_test(NAME AdditionBasic_ZeroAndMixed COMMAND ${PROJECT_NAME}_tests --gtest_filter=AdditionBasic.ZeroAndMixed)
+        add_test(NAME AdditionNegative_BothNegative COMMAND ${PROJECT_NAME}_tests --gtest_filter=AdditionNegative.BothNegative)
+        add_test(NAME AdditionEdgeCases_IntLimits COMMAND ${PROJECT_NAME}_tests --gtest_filter=AdditionEdgeCases.IntLimits)
+
+        # Remove or comment out gtest_discover_tests
+        # gtest_discover_tests(${PROJECT_NAME}_tests)
+
         if(TARGET ${PROJECT_NAME}_tests)
             add_custom_target(build_tests
                 COMMAND ${CMAKE_COMMAND} --build ${CMAKE_BINARY_DIR} --target ${PROJECT_NAME}_tests
                 COMMENT "Build test executable: ${PROJECT_NAME}_tests"
             )
-
             add_custom_target(run_tests
                 DEPENDS ${PROJECT_NAME}_tests
                 COMMAND ${CMAKE_CTEST_COMMAND} --output-on-failure
@@ -103,9 +105,9 @@ if(BUILD_TESTING)
     endif()
 endif()
 
-# Install rules
-if(TARGET ${PROJECT_NAME})
-    install(TARGETS ${PROJECT_NAME}
+# Installation rules
+if(TARGET hello)
+    install(TARGETS hello
         RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib

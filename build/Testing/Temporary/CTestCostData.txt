@@ -1,0 +1,5 @@
+AdditionBasic_PositiveNumbers 2 0.000874668
+AdditionBasic_ZeroAndMixed 2 0.000902421
+AdditionNegative_BothNegative 2 0.00107647
+AdditionEdgeCases_IntLimits 2 0.000907447
+---

@@ -1,0 +1,2 @@
+/usr/bin/ar qc libcsad2526ki406dariiprotsak20_lib.a CMakeFiles/csad2526ki406dariiprotsak20_lib.dir/main.cpp.o CMakeFiles/csad2526ki406dariiprotsak20_lib.dir/math_operations.cpp.o
+/usr/bin/ranlib libcsad2526ki406dariiprotsak20_lib.a
