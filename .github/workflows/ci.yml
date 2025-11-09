@@ -1,0 +1,98 @@
+name: CI Cross-build
+
+on:
+  push:
+    branches:
+      - '*develop*'
+      - '*master*'
+  pull_request:
+    branches:
+      - '*develop*'
+      - '*master*'
+
+jobs:
+  cross_build:
+    name: Cross-platform build
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout кодa
+        uses: actions/checkout@v4
+
+      - name: Встановити CMake (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y cmake
+        shell: bash
+
+      - name: Встановити CMake (macOS)
+        if: matrix.os == 'macos-latest'
+        run: |
+          brew update || true
+          brew install cmake || true
+        shell: bash
+
+      - name: Встановити CMake (Windows)
+        if: matrix.os == 'windows-latest'
+        run: choco install cmake --yes --no-progress
+        shell: powershell
+
+      - name: Конфігурація та білд (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          chmod +x ./ci.sh || true
+          ./ci.sh
+        shell: bash
+
+      - name: Конфігурація та білд (Windows)
+        if: matrix.os == 'windows-latest'
+        run: .\ci.bat
+        shell: powershell
+
+      - name: Deploy (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          if [ -x ./deploy.sh ]; then
+            chmod +x ./deploy.sh || true
+            ./deploy.sh
+          else
+            echo "deploy.sh not found or not executable, пропускаю."
+          fi
+        shell: bash
+
+      - name: Deploy (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          if (Test-Path .\deploy.bat) {
+            .\deploy.bat
+          } else {
+            Write-Host "deploy.bat not found, пропускаю."
+          }
+        shell: powershell
+
+      - name: Upload Build Artifacts (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}
+          path: |
+            build/*.exe
+            build/csad
+            build/unit_tests
+          if-no-files-found: ignore
+
+      - name: Upload Build Artifacts (Windows)
+        if: matrix.os == 'windows-latest'
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-${{ matrix.os }}
+          path: |
+            build\*.exe
+            build\csad
+            build\unit_tests
+          if-no-files-found: ignore
