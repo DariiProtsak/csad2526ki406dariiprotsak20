@@ -13,14 +13,14 @@ on:
 jobs:
   cross_build:
     name: Cross-platform build
-    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout кодa
+      - name: Checkout коду
         uses: actions/checkout@v4
 
       - name: Встановити CMake (Linux)
@@ -81,9 +81,10 @@ jobs:
         with:
           name: build-${{ matrix.os }}
           path: |
+            build/hello*
             build/*.exe
-            build/csad
-            build/unit_tests
+            build/csad*
+            build/unit_tests*
           if-no-files-found: ignore
 
       - name: Upload Build Artifacts (Windows)
@@ -92,7 +93,7 @@ jobs:
         with:
           name: build-${{ matrix.os }}
           path: |
-            build\*.exe
-            build\csad
-            build\unit_tests
+            build\hello.exe
+            build\csad.exe
+            build\unit_tests.exe
           if-no-files-found: ignore
