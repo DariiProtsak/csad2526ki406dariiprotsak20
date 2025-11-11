@@ -93,7 +93,7 @@ jobs:
         with:
           name: build-${{ matrix.os }}
           path: |
-            build\hello.exe
-            build\csad.exe
-            build\unit_tests.exe
+            build\*.exe
+            build\*
           if-no-files-found: ignore
+
