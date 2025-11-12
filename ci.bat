@@ -45,9 +45,11 @@ REM Run tests and show output
 echo ======= RUNNING TESTS =======
 ctest --output-on-failure
 echo ======= TESTS DONE =======
-REM Show build output files
+
+REM Show build output files for debug
 dir
 echo ===========================
+REM Debug build directory contents
 dir build
 echo ===========================
 
