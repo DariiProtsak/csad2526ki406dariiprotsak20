@@ -4,12 +4,11 @@ REM Create POSIX build.sh for other platforms (Linux/macOS/WSL/Git-Bash)
 echo Creating build.sh...
 >build.sh echo #!/usr/bin/env bash
 >>build.sh echo set -e
->>build.sh echo ""
->>build.sh echo "mkdir -p build"
->>build.sh echo "cd build"
->>build.sh echo "cmake .."
->>build.sh echo "cmake --build ."
->>build.sh echo "ctest --output-on-failure"
+>>build.sh echo mkdir -p build
+>>build.sh echo cd build
+>>build.sh echo cmake ..
+>>build.sh echo cmake --build .
+>>build.sh echo ctest --output-on-failure
 
 REM If bash is available, use POSIX workflow
 where bash >nul 2>&1
