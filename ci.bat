@@ -27,29 +27,24 @@ if not exist build (
 )
 cd build
 
-REM CMake configure
 cmake ..
 if %ERRORLEVEL% neq 0 (
     echo CMake configuration failed.
     exit /b %ERRORLEVEL%
 )
 
-REM Build project
 cmake --build .
 if %ERRORLEVEL% neq 0 (
     echo Build failed.
     exit /b %ERRORLEVEL%
 )
 
-REM Run tests and show output
 echo ======= RUNNING TESTS =======
 ctest --output-on-failure
 echo ======= TESTS DONE =======
 
-REM Show build output files for debug
 dir
 echo ===========================
-REM Debug build directory contents
 dir build
 echo ===========================
 
