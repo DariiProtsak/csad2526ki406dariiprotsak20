@@ -54,26 +54,19 @@ jobs:
         run: .\ci.bat
         shell: powershell
 
-      - name: Deploy (Linux/macOS)
-        if: matrix.os != 'windows-latest'
-        run: |
-          if [ -x ./deploy.sh ]; then
-            chmod +x ./deploy.sh || true
-            ./deploy.sh
-          else
-            echo "deploy.sh not found or not executable, пропускаю."
-          fi
-        shell: bash
-
-      - name: Deploy (Windows)
+      - name: Run Unit Tests (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          if (Test-Path .\deploy.bat) {
-            .\deploy.bat
-          } else {
-            Write-Host "deploy.bat not found, пропускаю."
-          }
-        shell: powershell
+          cd build
+          ctest --output-on-failure
+        shell: cmd
+
+      - name: Run Unit Tests (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd build
+          ctest --output-on-failure
+        shell: bash
 
       - name: Upload Build Artifacts (Linux/macOS)
         if: matrix.os != 'windows-latest'
@@ -96,4 +89,3 @@ jobs:
             build\*.exe
             build\*
           if-no-files-found: ignore
-
