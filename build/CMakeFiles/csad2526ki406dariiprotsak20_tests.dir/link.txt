@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/csad2526ki406dariiprotsak20_tests.dir/tests/unit_tests.cpp.o -o csad2526ki406dariiprotsak20_tests  libcsad2526ki406dariiprotsak20_lib.a lib/libgtest_main.a lib/libgtest.a 

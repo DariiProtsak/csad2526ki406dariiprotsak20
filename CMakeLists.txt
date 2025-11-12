@@ -83,7 +83,7 @@ if(BUILD_TESTING)
 
         target_include_directories(${PROJECT_NAME}_tests PRIVATE
             "${CMAKE_SOURCE_DIR}/include"
-            "${CMAKE_SOURCE_DIR}"             # allow including headers from project root
+            "${CMAKE_SOURCE_DIR}"
         )
         if(MSVC)
             target_compile_options(${PROJECT_NAME}_tests PRIVATE /W4)
