@@ -63,8 +63,8 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           cd build
-          ctest --output-on-failure
-        shell: cmd
+          ctest -C Debug --output-on-failure
+          shell: cmd
 
       - name: Run Unit Tests (Linux/macOS)
         if: matrix.os != 'windows-latest'
