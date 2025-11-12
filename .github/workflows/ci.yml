@@ -13,14 +13,14 @@ on:
 jobs:
   cross_build:
     name: Cross-platform build
-    runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - name: Checkout кодa
+      - name: Checkout коду
         uses: actions/checkout@v4
 
       - name: Встановити CMake (Linux)
@@ -54,26 +54,24 @@ jobs:
         run: .\ci.bat
         shell: powershell
 
-      - name: Deploy (Linux/macOS)
-        if: matrix.os != 'windows-latest'
-        run: |
-          if [ -x ./deploy.sh ]; then
-            chmod +x ./deploy.sh || true
-            ./deploy.sh
-          else
-            echo "deploy.sh not found or not executable, пропускаю."
-          fi
-        shell: bash
+      - name: Check build directory content (Windows)
+        if: matrix.os == 'windows-latest'
+        run: dir build
+        shell: cmd
 
-      - name: Deploy (Windows)
+      - name: Run Unit Tests (Windows)
         if: matrix.os == 'windows-latest'
         run: |
-          if (Test-Path .\deploy.bat) {
-            .\deploy.bat
-          } else {
-            Write-Host "deploy.bat not found, пропускаю."
-          }
-        shell: powershell
+          cd build
+          ctest -C Debug --output-on-failure
+        shell: cmd
+
+      - name: Run Unit Tests (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        run: |
+          cd build
+          ctest --output-on-failure
+        shell: bash
 
       - name: Upload Build Artifacts (Linux/macOS)
         if: matrix.os != 'windows-latest'
@@ -81,9 +79,10 @@ jobs:
         with:
           name: build-${{ matrix.os }}
           path: |
+            build/hello*
             build/*.exe
-            build/csad
-            build/unit_tests
+            build/csad*
+            build/unit_tests*
           if-no-files-found: ignore
 
       - name: Upload Build Artifacts (Windows)
@@ -93,6 +92,5 @@ jobs:
           name: build-${{ matrix.os }}
           path: |
             build\*.exe
-            build\csad
-            build\unit_tests
+            build\*
           if-no-files-found: ignore

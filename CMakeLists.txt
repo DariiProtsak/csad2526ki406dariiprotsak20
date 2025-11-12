@@ -36,9 +36,13 @@ add_library(${PROJECT_NAME}_lib STATIC ${PROJECT_SOURCES})
 target_include_directories(${PROJECT_NAME}_lib PUBLIC
     "${CMAKE_SOURCE_DIR}/include"
 )
-target_compile_options(${PROJECT_NAME}_lib PRIVATE
-    -Wall -Wextra -Wpedantic
-)
+
+# Cross-platform compiler flags
+if(MSVC)
+    target_compile_options(${PROJECT_NAME}_lib PRIVATE /W4)
+else()
+    target_compile_options(${PROJECT_NAME}_lib PRIVATE -Wall -Wextra -Wpedantic)
+endif()
 
 # Link threads to the library
 find_package(Threads REQUIRED)
@@ -61,7 +65,6 @@ if(BUILD_TESTING)
     )
     set(BUILD_GTEST ON CACHE BOOL "" FORCE)
     FetchContent_MakeAvailable(googletest)
-
     include(GoogleTest)
 endif()
 
@@ -72,23 +75,28 @@ if(BUILD_TESTING)
     )
     if(TEST_SOURCES)
         add_executable(${PROJECT_NAME}_tests ${TEST_SOURCES})
+
+        # Ensure executables go to build directory for tests discovery
+        set_target_properties(${PROJECT_NAME}_tests PROPERTIES
+            RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+        )
+
         target_include_directories(${PROJECT_NAME}_tests PRIVATE
             "${CMAKE_SOURCE_DIR}/include"
-            "${CMAKE_SOURCE_DIR}"             # allow including headers from project root
+            "${CMAKE_SOURCE_DIR}"
         )
-        target_compile_options(${PROJECT_NAME}_tests PRIVATE
-            -Wall -Wextra -Wpedantic
-        )
+        if(MSVC)
+            target_compile_options(${PROJECT_NAME}_tests PRIVATE /W4)
+        else()
+            target_compile_options(${PROJECT_NAME}_tests PRIVATE -Wall -Wextra -Wpedantic)
+        endif()
         target_link_libraries(${PROJECT_NAME}_tests PRIVATE ${PROJECT_NAME}_lib GTest::gtest_main Threads::Threads)
 
-        # Replace automatic discovery with manual add_test registration
+        # Manual test registration
         add_test(NAME AdditionBasic_PositiveNumbers COMMAND ${PROJECT_NAME}_tests --gtest_filter=AdditionBasic.PositiveNumbers)
         add_test(NAME AdditionBasic_ZeroAndMixed COMMAND ${PROJECT_NAME}_tests --gtest_filter=AdditionBasic.ZeroAndMixed)
         add_test(NAME AdditionNegative_BothNegative COMMAND ${PROJECT_NAME}_tests --gtest_filter=AdditionNegative.BothNegative)
         add_test(NAME AdditionEdgeCases_IntLimits COMMAND ${PROJECT_NAME}_tests --gtest_filter=AdditionEdgeCases.IntLimits)
-
-        # Remove or comment out gtest_discover_tests
-        # gtest_discover_tests(${PROJECT_NAME}_tests)
 
         if(TARGET ${PROJECT_NAME}_tests)
             add_custom_target(build_tests
