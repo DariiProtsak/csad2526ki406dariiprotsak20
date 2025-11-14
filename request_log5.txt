@@ -1,0 +1,5 @@
+Згенеруй Workflow до файлу ci.yml до Github Actions, який запускає акцію при push або pull request, що містить в назві develop чи master. Створи одну Job - cross_build. Використай матрицю (strategy: matrix) для запуску білду на трьох ОС:
+■ runs-on: ubuntu-latest (Linux)
+■ runs-on: windows-latest (Windows)
+■ runs-on: macos-latest (macOS).
+Кожен білд повинен включати кроки: Checkout коду (actions/checkout@v4), встановлення CMake (якщо потрібно), запуск команд конфігурації та білдування (ci.bat чи ci.sh) та deploy.
